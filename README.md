@@ -42,6 +42,12 @@ docker logs -f game-terraria
 | `serverconfig.txt.example` | Annotated server config — copy to `serverconfig.txt` and set `world=` |
 | `data/` | Your `.wld` worlds, mounted as Terraria's save directory |
 
+## Releases
+
+- Weekly `new-tag` runs cut a semver tag and build `ghcr.io/delnegend/terraria-server-container:<version>` plus `:latest`.
+- `VERSION` holds the repackaging version (`1.4.4` today); the server blob it wraps stays pinned at `terraria-server-1449` in the Dockerfile.
+- `commit` target test-builds any commit and uploads the image digest without publishing anything.
+
 ## License
 
 [MIT](LICENSE)
