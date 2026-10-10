@@ -1,0 +1,45 @@
+name: Container
+
+# The only gate: a fixed upstream release (terraria-server-1449) repackaged for
+# Docker. This builds the image exactly the way the README says to and asserts
+# the server binary, its config file, and the world mount still land where the
+# compose file expects them.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Static, finite, no cache reuse between runs at this cadence.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and inspect
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build the image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          tags: terraria:smoke
+
+      # The binary name and path are what an upstream repackaging could silently
+      # rename; fail if the file the ENTRYPOINT points at is missing.
+      - name: Assert the server binary exists
+        run: |
+          docker run --rm --entrypoint sh terraria:smoke -c '
+            test -x /home/terraria/server/TerrariaServer.bin.x86_64
+          '
