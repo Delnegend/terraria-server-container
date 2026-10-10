@@ -83,7 +83,12 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends actionlint shellcheck
+          sudo apt-get install -y -qq --no-install-recommends shellcheck
+          # actionlint is not packaged; fetch the published release binary.
+          curl -fsSL -o /tmp/actionlint.tar.gz \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          sudo tar -xzf /tmp/actionlint.tar.gz -C /usr/local/bin actionlint
+          actionlint -version
 
       # ---------------------------------------------------------------------
       # Mode 1: new-tag (semver -> CI gate -> bump -> atomic push)
@@ -229,8 +234,8 @@ jobs:
             org.opencontainers.image.version=${{ needs.prepare.outputs.version }}
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
-          cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache
-          cache-to: type=registry,ref=${{ env.IMAGE }}:buildcache,mode=max,image-manifest=true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Record the image digest
         env:
