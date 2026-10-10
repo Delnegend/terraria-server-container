@@ -1,4 +1,4 @@
-name: Container
+name: CI
 
 # The only gate: a fixed upstream release (terraria-server-1449) repackaged for
 # Docker. This builds the image exactly the way the README says to and asserts
@@ -20,8 +20,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build and inspect
+  check:
+    name: Check (just check)
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
