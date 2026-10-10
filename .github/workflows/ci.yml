@@ -25,12 +25,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: docker/setup-buildx-action@v4
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
 
       - name: Build the image
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: .
           load: true
@@ -43,3 +43,32 @@ jobs:
           docker run --rm --entrypoint sh terraria:smoke -c '
             test -x /home/terraria/server/TerrariaServer.bin.x86_64
           '
+
+  # Security scans. They need Docker images and registry egress, so they only run
+  # on GitHub-hosted runners. None of them is a required check — the gate stays
+  # `Build and inspect`. No OSV job: this repo has no package manifest.
+  secret-scan:
+    name: Secret Scanning (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0   # the whole history: a leaked secret lives in it
+      - name: Run Gitleaks
+        run: docker run --rm -v "${GITHUB_WORKSPACE}:/path" ghcr.io/gitleaks/gitleaks:latest detect --source=/path --verbose
+
+  sast-scan:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Run Semgrep OSS
+        run: docker run --rm -v "${GITHUB_WORKSPACE}:/src" returntocorp/semgrep semgrep scan --config=auto --error
+
+  trivy-scan:
+    name: Misconfig & Vulns (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Run Trivy
+        run: docker run --rm -v "${GITHUB_WORKSPACE}:/src" aquasec/trivy fs /src --severity HIGH,CRITICAL --scanners vuln,misconfig --exit-code 1

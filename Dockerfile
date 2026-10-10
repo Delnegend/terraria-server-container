@@ -9,9 +9,11 @@ RUN apt-get update && \
     unzip \
     lib32gcc-s1 \
     lib32stdc++6 \
-    ca-certificates \
-    sudo && \
+    ca-certificates && \
     rm -rf /var/lib/apt/lists/*
+
+# Sudo stays only for the human: `podman exec` lands as terraria, and this is
+# the admin shell for peeking inside. No build step below uses it anymore.
 
 RUN useradd -m -s /bin/zsh terraria && \
     usermod -aG sudo terraria && \
@@ -26,7 +28,7 @@ RUN wget https://terraria.org/api/download/pc-dedicated-server/terraria-server-1
     cd server && \
     chmod +x TerrariaServer.bin.x86_64 && \
     cd /home/terraria && \
-    sudo chown -R terraria:terraria server
+    chown -R terraria:terraria server
     
 USER terraria
 
