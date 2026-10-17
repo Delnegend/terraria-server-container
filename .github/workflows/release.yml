@@ -79,6 +79,28 @@ jobs:
       - name: Set up just
         uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
 
+      # `semver-action` compares against `fallbackTag`; if that tag does not
+      # exist yet, its compare call 404s. Anchor the first release at HEAD
+      # instead of requiring a hand-made tag. A dry run never mutates: on a
+      # fresh repo it stops with a clear message instead of a stack trace.
+      - name: Anchor the first release tag
+        env:
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          set -euo pipefail
+          if [ -n "$(git tag -l 'v[0-9]*')" ]; then
+            exit 0
+          fi
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "::error::no release tags yet — a real run anchors v0.0.0 at HEAD before calculating; there is nothing a dry run could release."
+            exit 1
+          fi
+          echo "no release tag yet — anchoring v0.0.0 at HEAD"
+          git -c user.name="github-actions[bot]" \
+              -c user.email="actions@users.noreply.github.com" \
+              tag -a v0.0.0 -m "Anchor tag for the first release calculation"
+          git push origin "refs/tags/v0.0.0"
+
       - name: Calculate Next SemVer
         id: semver
         uses: ietf-tools/semver-action@c90370b2958652d71c06a3484129a4d423a6d8a8 # v1
