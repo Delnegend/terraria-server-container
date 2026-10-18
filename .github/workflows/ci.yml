@@ -75,3 +75,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Run Trivy
         run: docker run --rm -v "${GITHUB_WORKSPACE}:/src" aquasec/trivy fs /src --severity HIGH,CRITICAL --scanners vuln,misconfig --exit-code 1
+
+  workflow-lint:
+    name: Workflow lint (actionlint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # Pinned, unlike the scanners above which float on :latest. actionlint
+      # gains checks between releases, so a floating tag can fail an unrelated
+      # commit when a new rule lands.
+      - name: Run actionlint
+        run: docker run --rm -v "${GITHUB_WORKSPACE}:/repo" rhysd/actionlint:1.7.12
