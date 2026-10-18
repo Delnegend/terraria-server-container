@@ -5,6 +5,7 @@
 **A Terraria dedicated server that starts with one command: the official 1.4.4.9 binary in a slim image, with your world and config mounted from the host.**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Delnegend/terraria-server-container/ci.yml?branch=main&style=flat-square)](https://github.com/Delnegend/terraria-server-container/actions)
+[![Release](https://img.shields.io/github/v/release/Delnegend/terraria-server-container?style=flat-square)](https://github.com/Delnegend/terraria-server-container/releases)
 [![License](https://img.shields.io/github/license/Delnegend/terraria-server-container?style=flat-square)](LICENSE)
 
 </div>
