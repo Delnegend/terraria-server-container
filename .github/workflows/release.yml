@@ -1,25 +1,5 @@
 name: Release / Build Artifacts
 
-# One image, one version, decided by the commit history rather than by anyone
-# typing a number.
-#
-# `semver-action` reads the Conventional Commits since the latest tag and
-# returns the next version. Nothing here - no flag, no input, no hand-rolled
-# arithmetic - can override it, so the version is a fact about the commits and
-# not a claim someone made about them.
-#
-#   feat:  -> minor      fix/refactor/build: -> patch
-#   everything else                 -> no bump, so nothing is released
-#
-
-# Solo-dev maintenance flow: one run, zero clicks on the happy path.
-# Sunday cron (or a manual run) gates on all of CI, then bumps, tags,
-# pushes, builds, and ships. No PR, no second run, no PAT.
-#
-# Branch protection keeps force-push/deletion/linear-history guards but
-# requires no status checks, so the bot pushes the bump straight to main.
-# The gate below is stronger than the old PR flow: it needs all of CI green,
-# where the PR only required the build.
 on:
   workflow_dispatch:
     inputs:
@@ -35,7 +15,6 @@ on:
   schedule:
     - cron: '0 0 * * 0' # Weekly: Sunday 00:00 UTC
 
-# Serialise releases: two concurrent runs must never race for the same version.
 concurrency:
   group: release-main
   cancel-in-progress: false
@@ -52,7 +31,6 @@ env:
   IMAGE: ghcr.io/delnegend/terraria-server-container
 
 jobs:
-  # Every CI job must pass before anything ships.
   gate:
     name: Gate (all of CI)
     uses: ./.github/workflows/ci.yml
@@ -60,7 +38,6 @@ jobs:
   prepare:
     name: Prepare (bump, tag, push)
     needs: gate
-    # Orchestration plus `just check`, so the full runner is enough.
     runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
@@ -84,10 +61,7 @@ jobs:
         uses: ietf-tools/semver-action@c90370b2958652d71c06a3484129a4d423a6d8a8 # v1
         with:
           token: ${{ github.token }}
-          # No tag exists yet; anchoring arithmetic starts here. Must name a
-          # real tag shape or the action errors on an empty history.
           fallbackTag: v0.0.0
-          # Nothing to release is a normal outcome, not a failure.
           noNewCommitBehavior: silent
           noVersionBumpBehavior: patch
 
@@ -112,8 +86,8 @@ jobs:
     # A container image build, so it needs the full runner's toolchain.
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # to create the release
-      packages: write   # to push to ghcr.io
+      contents: write
+      packages: write
     env:
       VERSION: ${{ needs.prepare.outputs.version }}
 
@@ -135,21 +109,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # The compose file joins the external `web-tailscale` network and
-      # bind-mounts `serverconfig.txt` plus `./data`, so neither can travel to
-      # CI: the network may not exist on the runner, and the config is
-      # gitignored by design. Build the Dockerfile directly for byte-identical
-      # layers, and copy the example config aside so the layer context matches.
+      # The compose network and gitignored config never travel to CI: build
+      # the Dockerfile directly, staging the example config for the context.
       - name: Stage the example config for the build context
         run: |
           set -euo pipefail
           cp serverconfig.txt.example serverconfig.txt
           echo "staged serverconfig.txt from the example for the build context"
 
-      # One published image, with exactly two tags: the exact version and
-      # `latest`. No rolling major.minor or major tags, so `:1.0.3` always
-      # means the same thing and there is nothing ambiguous to accidentally
-      # deploy.
+      # Exactly two tags, never rolling ones, so a version always means the same image.
       - name: Build and push server
         id: build
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
@@ -183,12 +151,6 @@ jobs:
           path: image-digest.txt
           if-no-files-found: error
 
-      # The tag already exists by the time this runs: `prepare` created and
-      # pushed it before the build started. That is the point - the release
-      # names a version that is already a fact about the repository - but it
-      # also means a build failure here leaves a tag with no release. The
-      # repair is to re-run with `ref` set to the tag, which rebuilds it and
-      # publishes its release without touching the version.
       - name: Publish the release
         if: needs.prepare.outputs.publish == 'true'
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3

@@ -1,20 +1,13 @@
 name: CI
 
-# The only gate: a fixed upstream release (terraria-server-1449) repackaged for
-# Docker. This builds the image exactly the way the README says to and asserts
-# the server binary, its config file, and the world mount still land where the
-# compose file expects them.
 on:
   pull_request:
     branches: [main]
   push:
     branches: [main]
   workflow_dispatch:
-  # The release workflow calls the whole file as its gate: all jobs below
-  # must pass before anything ships.
   workflow_call:
 
-# Static, finite, no cache reuse between runs at this cadence.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -47,9 +40,7 @@ jobs:
             test -x /home/terraria/server/TerrariaServer.bin.x86_64
           '
 
-  # Security scans. They need Docker images and registry egress, so they only run
-  # on GitHub-hosted runners. None of them is a required check — the gate stays
-  # `Build and inspect`. No OSV job: this repo has no package manifest.
+  # No OSV job: this repo has no package manifest.
   scan:
     name: Scan
     uses: Delnegend/actions/.github/workflows/scan.yml@6b0ff42cc9e8937cd1b37faebccd093fc6c68a86 # v1
