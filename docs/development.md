@@ -3,16 +3,18 @@
 ## Release procedure
 
 Releases are automatic: the Sunday 00:00 UTC cron (or a manual dispatch of
-`release.yml`) runs one of three targets. The version is derived from
+`release.yml`) ships, rebuilds a tag, or test-builds a SHA, selected by the
+optional `ref` ([dispatch modes](https://github.com/Delnegend/actions/blob/main/README.md)).
+The version is derived from
 Conventional Commits since the last tag — nobody types a number — and the
 `prepare` job gates on `just check`, bumps `VERSION` via `just bump`, and
 pushes the commit and tag atomically (`git push origin HEAD:main <tag>`).
 
 | Target | Effect |
 |---|---|
-| `new-tag` (default, and what the cron uses) | Gate → bump → tag & push → build & publish |
-| `tag` | Rebuild an existing tag (`ref`, default newest) and publish its release |
-| `commit` | Test-build a commit (`ref`, default `HEAD`); image loads locally, no release |
+| empty `ref` (default, and what the cron uses) | Gate → bump → tag & push → build & publish |
+| a version tag | Rebuild it and publish its release |
+| a commit SHA | Test-build it; image loads locally, no release |
 
 `VERSION` tracks the packaged upstream build (`1.4.4` = the 1.4.4.9 blob the
 `Dockerfile` downloads), not repo churn — `docs:`/`ci:`/`chore:`-only weeks

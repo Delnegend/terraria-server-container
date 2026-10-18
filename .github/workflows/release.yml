@@ -93,7 +93,7 @@ jobs:
 
       - name: Bump, tag, and push
         id: resolve
-        uses: Delnegend/actions/resolve-release@e5a0d7c3af36381065080b6272d91fde28d17414 # v1
+        uses: Delnegend/actions/resolve-release@3914bdd59116118eb4a7bad3cb2c4a04ab380b64 # v1
         with:
           ref: ${{ inputs.ref }}
           dry-run: ${{ inputs.dry-run }}
