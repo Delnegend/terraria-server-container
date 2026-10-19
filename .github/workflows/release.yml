@@ -67,7 +67,7 @@ jobs:
 
       - name: Bump, tag, and push
         id: resolve
-        uses: Delnegend/actions/resolve-release@95dff8c808d26b0b4b849450d90652b9b4aca685 # v1
+        uses: Delnegend/actions/resolve-release@0e55ed74d7039e8f1f5b23607345eefaef65d8b4 # v1
         with:
           ref: ${{ inputs.ref }}
           dry-run: ${{ inputs.dry-run }}
@@ -96,17 +96,6 @@ jobs:
           ref: ${{ needs.prepare.outputs.ref }}
           fetch-depth: 0
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
-
-      - name: Log in to GitHub Container Registry
-        if: needs.prepare.outputs.publish == 'true'
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       # The compose network and gitignored config never travel to CI: build
       # the Dockerfile directly, staging the example config for the context.
       - name: Stage the example config for the build context
@@ -115,25 +104,14 @@ jobs:
           cp serverconfig.txt.example serverconfig.txt
           echo "staged serverconfig.txt from the example for the build context"
 
-      # Exactly two tags, never rolling ones, so a version always means the same image.
       - name: Build and push server
         id: build
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        uses: Delnegend/actions/docker-build-push@0e55ed74d7039e8f1f5b23607345eefaef65d8b4 # v1
         with:
-          context: .
+          image: ${{ env.IMAGE }}
+          version: ${{ needs.prepare.outputs.version }}
+          publish: ${{ needs.prepare.outputs.publish }}
           platforms: linux/amd64
-          push: ${{ needs.prepare.outputs.publish == 'true' }}
-          load: ${{ needs.prepare.outputs.publish != 'true' }}
-          outputs: ${{ needs.prepare.outputs.publish == 'true' && 'type=image,compression=zstd,compression-level=4' || '' }}
-          tags: |
-            ${{ env.IMAGE }}:${{ needs.prepare.outputs.version }}
-            ${{ env.IMAGE }}:latest
-          labels: |
-            org.opencontainers.image.version=${{ needs.prepare.outputs.version }}
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: Record the image digest
         env:
@@ -151,11 +129,11 @@ jobs:
           if-no-files-found: error
 
       - name: Publish the release
-        if: needs.prepare.outputs.publish == 'true'
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
+        uses: Delnegend/actions/publish-release@0e55ed74d7039e8f1f5b23607345eefaef65d8b4 # v1
         with:
-          tag_name: ${{ needs.prepare.outputs.ref }}
-          generate_release_notes: true
+          ref: ${{ needs.prepare.outputs.ref }}
+          publish: ${{ needs.prepare.outputs.publish }}
+          download: "false"
           body: |
             Container image:
 

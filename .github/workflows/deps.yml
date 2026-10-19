@@ -15,47 +15,7 @@ concurrency:
 
 jobs:
   update:
-    name: Upgrade dependencies
-    runs-on: ubuntu-slim
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      # Frozen blob: no package manifest to upgrade (the server zip is pinned
-      - name: Declare nothing to upgrade
-        run: echo "frozen blob - no manifest to upgrade (terraria-server-1449 pinned in Dockerfile); actions-only updates come via Dependabot"
-
-      - name: Detect whether anything changed
-        id: diff
-        run: |
-          if git diff --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Ensure the dependencies label exists
-        if: steps.diff.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh label create dependencies --force --color 0366d6 --description "Dependency updates"
-
-      - name: Open upgrade PR
-        if: steps.diff.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          git config user.name  "github-actions[bot]"
-          git config user.email "actions@users.noreply.github.com"
-          git checkout -B deps/automatic
-          git add -u
-          git commit -m "chore(deps): upgrade dependencies"
-          git push --force origin deps/automatic
-          if gh pr view deps/automatic --json number >/dev/null 2>&1; then
-            echo "the push updated the existing upgrade PR"
-          else
-            gh pr create --base main --head deps/automatic \
-              --title "chore(deps): upgrade dependencies" \
-              --label dependencies \
-              --body "Automated daily upgrade. Versions published less than 14 days ago were filtered out by the package manager."
-          fi
+    uses: Delnegend/actions/.github/workflows/reusable-deps-update.yml@0e55ed74d7039e8f1f5b23607345eefaef65d8b4 # v1
+    with:
+      cargo: false
+      bun: false
