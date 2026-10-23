@@ -67,7 +67,7 @@ jobs:
 
       - name: Bump, tag, and push
         id: resolve
-        uses: Delnegend/actions/resolve-release@fd9a429325e7c9103399f01855023e6b394457a2 # v1
+        uses: Delnegend/actions/resolve-release@62064acc9dce2872175e85b3b2e1c2295cd1bee7 # v1
         with:
           ref: ${{ inputs.ref }}
           dry-run: ${{ inputs.dry-run }}
@@ -106,12 +106,11 @@ jobs:
 
       - name: Build and push server
         id: build
-        uses: Delnegend/actions/docker-build-push@fd9a429325e7c9103399f01855023e6b394457a2 # v1
+        uses: Delnegend/actions/docker-build-push@62064acc9dce2872175e85b3b2e1c2295cd1bee7 # v1
         with:
           image: ${{ env.IMAGE }}
           version: ${{ needs.prepare.outputs.version }}
           publish: ${{ needs.prepare.outputs.publish }}
-          platforms: linux/amd64
 
       - name: Record the image digest
         env:
@@ -129,17 +128,10 @@ jobs:
           if-no-files-found: error
 
       - name: Publish the release
-        uses: Delnegend/actions/publish-release@fd9a429325e7c9103399f01855023e6b394457a2 # v1
+        uses: Delnegend/actions/publish-release@62064acc9dce2872175e85b3b2e1c2295cd1bee7 # v1
         with:
           ref: ${{ needs.prepare.outputs.ref }}
           publish: ${{ needs.prepare.outputs.publish }}
           download: "false"
-          body: |
-            Container image:
-
-            ```
-            podman pull ${{ env.IMAGE }}:${{ needs.prepare.outputs.version }}
-            ```
-
-            Or `latest` for the most recent release. The git tag `${{ needs.prepare.outputs.ref }}`
-            is the same image, named the way git wants it.
+          image: ${{ env.IMAGE }}
+          version: ${{ needs.prepare.outputs.version }}
