@@ -23,11 +23,7 @@ permissions:
   contents: write
 
 env:
-  # A literal, lowercase, with no expressions. `${{ github.repository }}`
-  # expands to `Delnegend/...`, and buildx rejects a mixed-case image
-  # reference before it builds anything:
-  #   invalid tag "ghcr.io/Delnegend/terraria-server-container:1.0.0":
-  #   repository name must be lowercase
+  # Lowercase image repository required by buildx.
   IMAGE: ghcr.io/delnegend/terraria-server-container
 
 jobs:
