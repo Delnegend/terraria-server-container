@@ -22,9 +22,6 @@ concurrency:
 permissions:
   contents: write
 
-env:
-  # Lowercase image repository required by buildx.
-  IMAGE: ghcr.io/delnegend/terraria-server-container
 
 jobs:
   gate:
@@ -77,57 +74,32 @@ jobs:
     name: Build & Release Artifacts
     needs: prepare
     if: needs.prepare.outputs.skip != 'true'
-    # A container image build, so it needs the full runner's toolchain.
     runs-on: ubuntu-latest
     permissions:
-      contents: write
       packages: write
-    env:
-      VERSION: ${{ needs.prepare.outputs.version }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ needs.prepare.outputs.ref }}
-          fetch-depth: 0
-
-      # The compose network and gitignored config never travel to CI: build
-      # the Dockerfile directly, staging the example config for the context.
-      - name: Stage the example config for the build context
-        run: |
-          set -euo pipefail
-          cp serverconfig.txt.example serverconfig.txt
-          echo "staged serverconfig.txt from the example for the build context"
 
       - name: Build and push server
-        id: build
         uses: Delnegend/actions/docker-build-push@62064acc9dce2872175e85b3b2e1c2295cd1bee7 # v1
         with:
-          image: ${{ env.IMAGE }}
           version: ${{ needs.prepare.outputs.version }}
           publish: ${{ needs.prepare.outputs.publish }}
 
-      - name: Record the image digest
-        env:
-          DIGEST: ${{ steps.build.outputs.digest }}
-        run: |
-          set -euo pipefail
-          echo "$DIGEST" > image-digest.txt
-          echo "built image digest: $DIGEST"
-
-      - name: Upload digest artifact (always kept in the Actions run)
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        with:
-          name: image-digest-${{ needs.prepare.outputs.ref }}
-          path: image-digest.txt
-          if-no-files-found: error
-
+  publish:
+    name: Publish Consolidated Release
+    needs: [prepare, build]
+    if: needs.prepare.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    steps:
       - name: Publish the release
         uses: Delnegend/actions/publish-release@62064acc9dce2872175e85b3b2e1c2295cd1bee7 # v1
         with:
           ref: ${{ needs.prepare.outputs.ref }}
           publish: ${{ needs.prepare.outputs.publish }}
-          download: "false"
-          image: ${{ env.IMAGE }}
+          container: true
           version: ${{ needs.prepare.outputs.version }}
