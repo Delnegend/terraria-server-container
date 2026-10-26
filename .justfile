@@ -53,3 +53,4 @@ version action ver="":
         git diff -- VERSION
         ;;
       *) echo "usage: just version get|set X.Y.Z" >&2; exit 1 ;;
+    esac
