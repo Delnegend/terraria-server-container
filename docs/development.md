@@ -6,7 +6,7 @@ Releases are automatic: the Sunday 00:00 UTC cron (or a manual dispatch of
 `release.yml`) ships, rebuilds a tag, or test-builds a SHA, selected by the
 optional `ref` ([dispatch modes](https://github.com/Delnegend/actions/blob/main/README.md)).
 The version is derived from
-Conventional Commits since the last tag — nobody types a number — and the
+Conventional Commits since the last tag (nobody types a number), and the
 `prepare` job gates on `just check`, bumps `VERSION` via `just bump`, and
 pushes the commit and tag atomically (`git push origin HEAD:main <tag>`).
 
@@ -17,12 +17,12 @@ pushes the commit and tag atomically (`git push origin HEAD:main <tag>`).
 | a commit SHA | Test-build it; image loads locally, no release |
 
 `VERSION` tracks the packaged upstream build (`1.4.4` = the 1.4.4.9 blob the
-`Dockerfile` downloads), not repo churn — `docs:`/`ci:`/`chore:`-only weeks
+`Dockerfile` downloads), not repo churn; `docs:`/`ci:`/`chore:`-only weeks
 release nothing and the run ends green having published nothing.
 
 ### Container-specific notes
 
-- The compose file joins the **external `web-tailscale` network** — create it
+- The compose file joins the **external `web-tailscale` network**; create it
   first (`docker network create web-tailscale`) or repoint the service at your
   own network. CI and the release build never touch compose: they build the
   `Dockerfile` directly, so the external network is a runtime-only concern.

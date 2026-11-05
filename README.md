@@ -17,10 +17,10 @@
 ```bash
 # 1. Bring your world: drop your .wld file into data/Worlds/
 #    and copy serverconfig.txt.example to serverconfig.txt, pointing
-#    `world=` at it — e.g. world=/home/terraria/.local/share/Terraria/Worlds/YourWorldName.wld
+#    `world=` at it, e.g. world=/home/terraria/.local/share/Terraria/Worlds/YourWorldName.wld
 
 # 2. Start it (the compose file joins the external `web-tailscale`
-#    network — `docker network create web-tailscale` first, or repoint it)
+#    network; `docker network create web-tailscale` first, or repoint it)
 docker compose up -d --build
 
 # 3. Watch it come up
@@ -29,10 +29,10 @@ docker logs -f game-terraria
 
 ## Highlights
 
-- **A stock server, containerized** — the official 1.4.4.9 dedicated binary over `debian:12-slim`, running as the unprivileged `terraria` user, with nothing patched.
-- **Your world outlives the container** — worlds and config are bind mounts, so rebuilding the image never touches them.
-- **One config file to learn** — `serverconfig.txt` holds port, players, password, and world; the shipped example is annotated.
-- **Survives reboots** — `restart: unless-stopped`, with a TTY and open stdin so `docker attach` drops you at the server console.
+- **A stock server, containerized**: the official 1.4.4.9 dedicated binary over `debian:12-slim`, running as the unprivileged `terraria` user, with nothing patched.
+- **Your world outlives the container**: worlds and config are bind mounts, so rebuilding the image never touches them.
+- **One config file to learn**: `serverconfig.txt` holds port, players, password, and world; the shipped example is annotated.
+- **Survives reboots**: `restart: unless-stopped`, with a TTY and open stdin so `docker attach` drops you at the server console.
 
 ## Files
 
@@ -40,7 +40,7 @@ docker logs -f game-terraria
 |---|---|
 | `Dockerfile` | Fetches the 1.4.4.9 zip, extracts the Linux server, runs as `terraria` |
 | `docker-compose.yml` | Build, world/config bind mounts, port `7777`, restart |
-| `serverconfig.txt.example` | Annotated server config — copy to `serverconfig.txt` and set `world=` |
+| `serverconfig.txt.example` | Annotated server config; copy to `serverconfig.txt` and set `world=` |
 | `data/` | Your `.wld` worlds, mounted as Terraria's save directory |
 
 ## Releases
