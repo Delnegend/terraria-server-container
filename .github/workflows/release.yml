@@ -85,7 +85,7 @@ jobs:
           ref: ${{ needs.prepare.outputs.ref }}
 
       - name: Build and push server
-        uses: Delnegend/actions/docker-build-push@f8687fdc288837d994b43118f44972b9b8e7b2aa # v1
+        uses: Delnegend/actions/docker-build-push@c6a6933ee3cde8baa3ac13e0366c81ac833c1d18 # v1
         with:
           version: ${{ needs.prepare.outputs.version }}
           publish: ${{ needs.prepare.outputs.publish }}
