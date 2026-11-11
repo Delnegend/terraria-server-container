@@ -6,7 +6,7 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Delnegend/terraria-server-container/ci.yml?branch=main&style=flat-square)](https://github.com/Delnegend/terraria-server-container/actions)
 [![Release](https://img.shields.io/github/v/release/Delnegend/terraria-server-container?style=flat-square)](https://github.com/Delnegend/terraria-server-container/releases)
-[![License](https://img.shields.io/github/license/Delnegend/terraria-server-container?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
 </div>
 
@@ -29,25 +29,16 @@ docker logs -f game-terraria
 
 ## Highlights
 
-- **A stock server, containerized**: the official 1.4.4.9 dedicated binary over `debian:12-slim`, running as the unprivileged `terraria` user, with nothing patched.
-- **Your world outlives the container**: worlds and config are bind mounts, so rebuilding the image never touches them.
+- **A stock server, containerized**: The official 1.4.4.9 dedicated binary over `debian:12-slim`, running as the unprivileged `terraria` user, with nothing patched.
+- **Your world outlives the container**: Worlds and config are bind mounts, so rebuilding the image never touches them.
 - **One config file to learn**: `serverconfig.txt` holds port, players, password, and world; the shipped example is annotated.
 - **Survives reboots**: `restart: unless-stopped`, with a TTY and open stdin so `docker attach` drops you at the server console.
 
-## Files
+## Documentation
 
-| File | Purpose |
-|---|---|
-| `Dockerfile` | Fetches the 1.4.4.9 zip, extracts the Linux server, runs as `terraria` |
-| `docker-compose.yml` | Build, world/config bind mounts, port `7777`, restart |
-| `serverconfig.txt.example` | Annotated server config; copy to `serverconfig.txt` and set `world=` |
-| `data/` | Your `.wld` worlds, mounted as Terraria's save directory |
-
-## Releases
-
-- Weekly runs cut a semver tag and build `ghcr.io/delnegend/terraria-server-container:<version>` plus `:latest`.
-- `VERSION` holds the repackaging version (`1.4.4` today); the server blob it wraps stays pinned at `terraria-server-1449` in the Dockerfile.
-- A run dispatched with a commit SHA test-builds it without publishing anything. Dispatch modes are shared ([Delnegend/actions](https://github.com/Delnegend/actions/blob/main/README.md)).
+- **[Architecture](docs/architecture.md)**: Container design, unprivileged runtime, and world persistence.
+- **[Development](docs/development.md)**: Release procedures, workflow gating, and container-specific notes.
+- **[Deployment](docs/deployment.md)**: Deployment via Docker Compose or Podman, console access, and upgrades.
 
 ## License
 
