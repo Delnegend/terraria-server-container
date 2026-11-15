@@ -1,4 +1,4 @@
-$schema: "https://raw.githubusercontent.com/Delnegend/actions/main/scripts/README.schema.json"
+$schema: "https://raw.githubusercontent.com/Delnegend/common-facade/main/README.schema.json"
 
 name: Terraria Server Container
 repo: Delnegend/terraria-server-container
